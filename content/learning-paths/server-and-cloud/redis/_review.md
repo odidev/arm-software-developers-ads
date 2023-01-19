@@ -13,23 +13,23 @@
 review:
     - questions:
         question: >
-            Private key files used with SSH must be accessible to others (read permission).
+            
         answers:
             - "True"
             - "False"
         correct_answer: 2                     
         explanation: >
-            Private key files must not be readable for others, use chmod 400 to set the permission
+            
 
     - questions:
         question: >
-            Terraform is an Infrastructure as Code (IaC) solution created by AWS.
+            
         answers:
             - "True"
             - "False"
         correct_answer: 2                     
         explanation: >
-            Terraform is not specific to AWS and was created by HashiCorp.
+            
                
 
 
