@@ -4,10 +4,10 @@
 # ================================================================================
 
 next_step_guidance: >
-    We recommend you continue learning about migrating applications to Arm. 
+    We recommend you continue learning about Redis. 
 # 1-3 sentence recommendation outlining how the reader can generally keep learning about these topics, and a specific explanation of why the next step is being recommended.
 
-recommended_path: "/learning-paths/server-and-cloud/migration/"
+recommended_path: "/learning-paths/server-and-cloud/redis/"
 # Link to the next learning path being recommended(For example this could be /learning-paths/server-and-cloud/mongodb).
 
 
@@ -22,9 +22,9 @@ further_reading:
         link: https://registry.terraform.io/providers/hashicorp/aws/latest/docs
         type: documentation
     - resource:
-        title: Amazon EC2 C7g Instances, Powered by AWS Graviton3 Processors
-        link: https://aws.amazon.com/blogs/aws/new-amazon-ec2-c7g-instances-powered-by-aws-graviton3-processors/
-        type: Blog
+        title: Redis docs
+        link: https://redis.io/docs/
+        type: documentation
 
 
 # ================================================================================
