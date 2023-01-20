@@ -58,7 +58,7 @@ Output when a key pair is generated:
 
 ## Install Redis manually on EC2 instance via Terraform
 
-After generating the public and private keys, we have to create an EC2 instance. Then we will push our public key to the **authorized_keys** folder in `~/.ssh`. We will also create a security group that opens inbound ports `22`(ssh) and `6000`(Redis). We will also install Redis on remote server using `remote-exec` provisioner. Below is a Terraform file called `main.tf` which will do this for us.
+After generating the public and private keys, we have to create an EC2 instance. Then we will push our public key to the **authorized_keys** folder in `~/.ssh`. We will also create a security group that opens inbound ports `22`(ssh) and `6379`(Redis). We will also install Redis on remote server using `remote-exec` provisioner. Below is a Terraform file called `main.tf` which will do this for us.
 
     
 
@@ -81,8 +81,8 @@ resource "aws_instance" "redis-deployment" {
       "echo 'deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main' | sudo tee /etc/apt/sources.list.d/redis.list",
       "sudo apt update",
       "sudo apt install -y redis",
-      "redis-server --port 6000 --protected-mode no --daemonize yes",
-      "redis-cli -h ${self.public_dns} -p 6000 set name test",
+      "redis-server --protected-mode no --daemonize yes",
+      "redis-cli -h ${self.public_dns} set name test",
     ]
   }
 
@@ -91,6 +91,7 @@ resource "aws_instance" "redis-deployment" {
     host        = self.public_ip
     user        = "ubuntu"
     private_key = file("/home/ubuntu/aws/aws_key")
+    timeout     = "4m"
   }
 
 }
@@ -101,8 +102,8 @@ resource "aws_security_group" "main" {
 
   ingress {
     description      = "Open redis connection port"
-    from_port        = 6000
-    to_port          = 6000
+    from_port        = 6379
+    to_port          = 6379
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
 }
@@ -195,9 +196,9 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
     - name: Install redis
       shell: apt install -y redis
     - name: Start redis server
-      shell: redis-server --port 6000 --protected-mode no --daemonize yes
+      shell: redis-server --protected-mode no --daemonize yes
     - name: Connect to redis server using redis client
-      shell: redis-cli -h ${HOST} -p 6000 set name test
+      shell: redis-cli -h ${HOST} set name test
 ```
 
 To run a Playbook, we need to use the `ansible-playbook` command.
@@ -229,7 +230,7 @@ sudo apt install -y redis
 We can connect to remote Redis server from local machine using redis-cli using the command below. If we want to enter into redis shell we can keep the `{command}` argument blank.
 
 ```console
-redis-cli -h {public_dns} -p {port} {command}
+redis-cli -h {public_dns} -p 6379 {command}
 ```
 
 ![image](https://user-images.githubusercontent.com/90673309/213519785-eb5297d6-b207-45db-968a-54883d7031d1.png)
