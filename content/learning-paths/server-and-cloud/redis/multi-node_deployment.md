@@ -1,6 +1,6 @@
 ---
 # User change
-title: "Install Redis manually on a single node"
+title: "Install Redis in a multi-node configuration"
 
 weight: 2 # 1 is first, 2 is second, etc.
 
@@ -8,7 +8,7 @@ weight: 2 # 1 is first, 2 is second, etc.
 layout: "learningpathall"
 ---
 
-##  Install Redis manually on a single node 
+##  Install Redis in a multi-node configuration
 
 ## Prerequisites
 
@@ -82,7 +82,7 @@ resource "aws_instance" "redis-deployment" {
       "sudo apt update",
       "sudo apt install -y redis",
       "redis-server --port 6000 --protected-mode no --daemonize yes",
-      "redis-cli -h ${self.public_dns} -p 6000 set name test",
+      "redis-cli --cluster create ${self.public_dns}:6000 ${self.public_dns}:6002 ${self.public_dns}:6004 --cluster-replicas 1",
     ]
   }
 
@@ -91,6 +91,7 @@ resource "aws_instance" "redis-deployment" {
     host        = self.public_ip
     user        = "ubuntu"
     private_key = file("/home/ubuntu/aws/aws_key")
+    timeout     = "4m"
   }
 
 }
@@ -103,6 +104,20 @@ resource "aws_security_group" "main" {
     description      = "Open redis connection port"
     from_port        = 6000
     to_port          = 6000
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+}
+  ingress {
+    description      = "Open redis connection port"
+    from_port        = 6002
+    to_port          = 6002
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+}
+  ingress {
+    description      = "Open redis connection port"
+    from_port        = 6004
+    to_port          = 6004
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
 }
@@ -196,8 +211,8 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
       shell: apt install -y redis
     - name: Start redis server
       shell: redis-server --port 6000 --protected-mode no --daemonize yes
-    - name: Connect to redis server using redis client
-      shell: redis-cli -h ${HOST} -p 6000 set name test
+    - name: Create redis cluster
+      shell: redis-cli --cluster create ${self.public_dns}:6000 ${self.public_dns}:6002 ${self.public_dns}:6004 --cluster-replicas 1
 ```
 
 To run a Playbook, we need to use the `ansible-playbook` command.
