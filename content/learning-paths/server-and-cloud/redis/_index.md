@@ -1,15 +1,16 @@
 ---
-title: Deploy Redis server on Arm
+title: Deploying Redis on Arm
 
-description: Deploy Redis in single node and multi-node through Docker and EC2 instance
+description: Deploy Redis in single node and multi-node configuration
 
 minutes_to_complete: 60   
 
 who_is_this_for: Developers new to Redis
 
 learning_objectives: 
-    - Deploy single node and multi-node of Redis through Docker and EC2 instance
-    - Automate Redis server creation using Terraform and Ansible
+    - Installing Redis manually on a single node
+    - Installing Redis with docker container on a single node
+    - Installing Redis in a multi-node configuration (sharding)
 
 prerequisites:
     - An Amazon Web Services (AWS) account
