@@ -18,10 +18,6 @@ recommended_path: "/learning-paths/server-and-cloud/redis/"
 
 further_reading:
     - resource:
-        title: Terraform docs for AWS
-        link: https://registry.terraform.io/providers/hashicorp/aws/latest/docs
-        type: documentation
-    - resource:
         title: Redis docs
         link: https://redis.io/docs/
         type: documentation
