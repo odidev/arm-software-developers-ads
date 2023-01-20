@@ -214,6 +214,22 @@ Here is the output after the successful execution of the `ansible-playbook` comm
 
 ## Connecting to remote Redis server from local machine
 
-We can connect to remote Redis server from local machine using redis-cli.
+Install redis-cli on local machine using the commands below.
+
+```console
+curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+
+sudo apt update
+
+sudo apt install -y redis
+```
+
+We can connect to remote Redis server from local machine using redis-cli using the command below. If we want to enter into redis shell we can keep the `{command}` argument blank.
+
+```console
+redis-cli -h {public_dns} -p {port} {command}
+```
 
 ![image](https://user-images.githubusercontent.com/90673309/213519785-eb5297d6-b207-45db-968a-54883d7031d1.png)
