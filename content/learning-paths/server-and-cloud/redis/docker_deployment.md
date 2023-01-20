@@ -56,7 +56,7 @@ Output when a key pair is generated:
 **Note:** Use the public key aws_key.pub inside the Terraform file to provision/start the instance and private key aws_key to connect to the instance.
 
 
-## Install Redis manually on EC2 instance via Terraform
+## Install Redis using docker on EC2 instance via Terraform
 
 After generating the public and private keys, we have to create an EC2 instance. Then we will push our public key to the **authorized_keys** folder in `~/.ssh`. We will also create a security group that opens inbound ports `22`(ssh) and `6000`(Redis). We will also install Redis on remote server using `remote-exec` provisioner. Below is a Terraform file called `main.tf` which will do this for us.
 
