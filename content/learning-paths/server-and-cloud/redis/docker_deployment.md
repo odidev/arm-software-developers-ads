@@ -1,6 +1,6 @@
 ---
 # User change
-title: "Install Redis manually on a single node"
+title: "Install Redis with docker container on a single node"
 
 weight: 2 # 1 is first, 2 is second, etc.
 
@@ -8,7 +8,7 @@ weight: 2 # 1 is first, 2 is second, etc.
 layout: "learningpathall"
 ---
 
-##  Install Redis manually on a single node 
+##  Install Redis with docker container on a single node 
 
 ## Prerequisites
 
@@ -77,11 +77,14 @@ resource "aws_instance" "redis-deployment" {
 
   provisioner "remote-exec" {
     inline = [
-      "curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg",
-      "echo 'deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main' | sudo tee /etc/apt/sources.list.d/redis.list",
       "sudo apt update",
-      "sudo apt install -y redis",
-      "redis-server --port 6000 --protected-mode no --daemonize yes",
+      "sudo apt install -y ca-certificates curl gnupg lsb-release",
+      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg",
+      "echo 'deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable' | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null",
+      "sudo apt update",
+      "sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin",
+      "sudo systemctl start docker",
+      "sudo docker run --name redis-container -p 6000:6379 -d redis --protected-mode no",
       "redis-cli -h ${self.public_dns} -p 6000 set name test",
     ]
   }
@@ -91,6 +94,7 @@ resource "aws_instance" "redis-deployment" {
     host        = self.public_ip
     user        = "ubuntu"
     private_key = file("/home/ubuntu/aws/aws_key")
+    timeout     = "4m"
   }
 
 }
@@ -172,7 +176,7 @@ terraform apply
 ## Install Redis manually on EC2 instance via Ansible
 Ansible is a software tool that provides simple but powerful automation for cross-platform computer support.
 Ansible allows you to configure not just one computer, but potentially a whole network of computers at once.
-To run Ansible, we have to create a `.yml` file, which is also known as `Ansible-Playbook`. The following playbook contains a collection of tasks which install redis manually.
+To run Ansible, we have to create a `.yml` file, which is also known as `Ansible-Playbook`. The following playbook contains a collection of tasks which install redis using docker.
 
 ### Here is the complete YML file of Ansible-Playbook
 ```console
@@ -184,18 +188,23 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
   tasks:
     - name: Update the Machine
       shell: apt update -y
-    - name: Set environment variable
-      shell: HOST=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)
-    - name: Download redis gpg key
-      shell: curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
-    - name: Add redis gpg key
-      shell: echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+    - name: Install docker dependencies
+      shell: apt install -y ca-certificates curl gnupg lsb-release
+    - name: Download docker gpg key
+      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    - name: Add docker gpg key
+      shell: echo 'deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable' | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     - name: Update the apt sources
       shell: apt update
-    - name: Install redis
-      shell: apt install -y redis
-    - name: Start redis server
-      shell: redis-server --port 6000 --protected-mode no --daemonize yes
+    - name: Install docker
+      shell: apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    - name: Start and enable docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+    - name: Start redis container
+      shell: docker run --name redis-container -p 6000:6379 -d redis --protected-mode no
     - name: Connect to redis server using redis client
       shell: redis-cli -h ${HOST} -p 6000 set name test
 ```
