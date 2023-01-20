@@ -2,7 +2,7 @@
 # User change
 title: "Install Redis in a multi-node configuration"
 
-weight: 2 # 1 is first, 2 is second, etc.
+weight: 4 # 1 is first, 2 is second, etc.
 
 # Do not modify these elements
 layout: "learningpathall"
@@ -231,4 +231,4 @@ Here is the output after the successful execution of the `ansible-playbook` comm
 
 We can connect to remote Redis server from local machine using redis-cli.
 
-![image](https://user-images.githubusercontent.com/90673309/213519785-eb5297d6-b207-45db-968a-54883d7031d1.png)
+
