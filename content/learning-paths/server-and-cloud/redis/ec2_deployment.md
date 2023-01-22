@@ -81,8 +81,8 @@ resource "aws_instance" "redis-deployment" {
       "echo 'deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main' | sudo tee /etc/apt/sources.list.d/redis.list",
       "sudo apt update",
       "sudo apt install -y redis",
-      "redis-server --protected-mode no --daemonize yes",
-      "redis-cli -h ${self.public_dns} set name test",
+      "redis-server --port 6000 --protected-mode no --daemonize yes",
+      "redis-cli -h ${self.public_dns} -p 6000 set name test",
     ]
   }
 
