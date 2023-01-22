@@ -82,7 +82,7 @@ resource "aws_instance" "redis-deployment" {
       "curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg",
       "echo 'deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main' | sudo tee /etc/apt/sources.list.d/redis.list",
       "sudo apt update",
-      "sudo apt install -y redis",
+      "sudo apt install -y redis-tools redis",
       "redis-server --bind ${self.public_dns} --port 6000 --protected-mode no --daemonize yes",
       "redis-cli -h ${self.public_dns} -p 6000 set name test",
     ]
