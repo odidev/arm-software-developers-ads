@@ -102,8 +102,8 @@ resource "aws_security_group" "main" {
 
   ingress {
     description      = "Open redis connection port"
-    from_port        = 6379
-    to_port          = 6379
+    from_port        = 6000
+    to_port          = 6000
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
 }
