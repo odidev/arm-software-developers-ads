@@ -58,11 +58,10 @@ Output when a key pair is generated:
 
 ## Install Redis manually on EC2 instance via Terraform
 
-By default redis is binded to `127.0.0.1` local host IP and runs at port `6379`. To connect with redis installed on remote server we need to run `redis-server` with `--port` option specifying the port number.
+Redis is binded to localhost (`127.0.0.1`) IP and runs at port `6379` by default. This default configuration makes connecting to redis outside of EC2 impossible. To connect with redis installed on remote server we need to run `redis-server` with `--port` option specifying the port number, `--protected-mode` option set to `no` to allow connection from redis client `redis-cli` and `--daemonize` option set to yes to run redis in background so that it keeps on running until it is manually terminated. We can select any random available port to start redis server other than `6379` because as soon as redis is installed it runs locally with the localhost (`127.0.0.1`) IP and `6379` port.
 
 After generating the public and private keys, we have to create an EC2 instance. Then we will push our public key to the **authorized_keys** folder in `~/.ssh`. We will also create a security group that opens inbound ports `22`(ssh) and `6000`(Redis). We will also install Redis on remote server using `remote-exec` provisioner. Below is a Terraform file called `main.tf` which will do this for us.
-
-    
+  
 
 ```console
 provider "aws" {
@@ -95,7 +94,6 @@ resource "aws_instance" "redis-deployment" {
     private_key = file("/home/ubuntu/aws/aws_key")
     timeout     = "4m"
   }
-
 }
 
 resource "aws_security_group" "main" {
@@ -192,11 +190,11 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
     - name: Update the apt sources
       shell: apt update
     - name: Install redis
-      shell: apt install -y redis
+      shell: apt install -y redis-tools redis
     - name: Start redis server
-      shell: redis-server --protected-mode no --daemonize yes
+      shell: redis-server --port 6000 --protected-mode no --daemonize yes
     - name: Connect to redis server using redis client
-      shell: redis-cli -h ${HOST} set name test
+      shell: redis-cli -h ${HOST} -p 6000 set name test
 ```
 
 To run a Playbook, we need to use the `ansible-playbook` command.
@@ -222,13 +220,13 @@ echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://pack
 
 sudo apt update
 
-sudo apt install -y redis
+sudo apt install -y redis-tools redis
 ```
 
 We can connect to remote Redis server from local machine using redis-cli using the command below. If we want to enter into redis shell we can keep the `{command}` argument blank.
 
 ```console
-redis-cli -h {public_dns} -p 6379 {command}
+redis-cli -h {public_dns} -p {port} {command}
 ```
 
 ![image](https://user-images.githubusercontent.com/90673309/213519785-eb5297d6-b207-45db-968a-54883d7031d1.png)
