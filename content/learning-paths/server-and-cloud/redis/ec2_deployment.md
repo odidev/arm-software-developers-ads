@@ -58,6 +58,8 @@ Output when a key pair is generated:
 
 ## Install Redis manually on EC2 instance via Terraform
 
+By default redis is binded to `127.0.0.1` local host IP and runs at port `6379`. To connect with redis installed on remote server we need to run `redis-server` with `--port` option specifying the port number.
+
 After generating the public and private keys, we have to create an EC2 instance. Then we will push our public key to the **authorized_keys** folder in `~/.ssh`. We will also create a security group that opens inbound ports `22`(ssh) and `6000`(Redis). We will also install Redis on remote server using `remote-exec` provisioner. Below is a Terraform file called `main.tf` which will do this for us.
 
     
@@ -81,7 +83,7 @@ resource "aws_instance" "redis-deployment" {
       "echo 'deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main' | sudo tee /etc/apt/sources.list.d/redis.list",
       "sudo apt update",
       "sudo apt install -y redis",
-      "redis-server --port 6000 --protected-mode no --daemonize yes",
+      "redis-server --bind ${self.public_dns} --port 6000 --protected-mode no --daemonize yes",
       "redis-cli -h ${self.public_dns} -p 6000 set name test",
     ]
   }
