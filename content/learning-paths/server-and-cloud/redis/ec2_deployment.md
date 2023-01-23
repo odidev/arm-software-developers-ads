@@ -57,7 +57,7 @@ Output when a key pair is generated:
 
 ## Deploy EC2 instance via Terraform
 
-After generating the public and private keys, we have to create an EC2 instance. Then we will push our public key to the **authorized_keys** folder in `~/.ssh`. We will also create a security group that opens inbound ports `22`(ssh) and `6000`(MySQL). Below is a Terraform file called `main.tf` which will do this for us.
+After generating the public and private keys, we have to create an EC2 instance. Then we will push our public key to the **authorized_keys** folder in `~/.ssh`. We will also create a security group that opens inbound ports `22`(ssh) and `6000`(Redis). Below is a Terraform file called `main.tf` which will do this for us.
 
 
 ```console
