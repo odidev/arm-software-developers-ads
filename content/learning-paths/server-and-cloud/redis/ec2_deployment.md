@@ -194,10 +194,9 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
 
 To run a Playbook, we need to use the `ansible-playbook` command.
 ```console
-ansible-playbook {your_yml_file} --key-file {path_to_private_key}
+ansible-playbook {your_yml_file} -i {your_inventory_file} --key-file {path_to_private_key}
 ```
-**NOTE:-** Replace `{your_yml_file}` and `{path_to_private_key}` with orignal values.
-
+**NOTE:-** Replace `{your_yml_file}`, `{your_inventory_file}` and `{path_to_private_key}` with orignal values.
 
 
 Here is the output after the successful execution of the `ansible-playbook` command.
@@ -218,7 +217,14 @@ sudo apt update
 sudo apt install -y redis-tools redis
 ```
 
-Redis is binded to localhost (`127.0.0.1`) IP and runs at port `6379` by default. This default configuration makes connecting to redis outside of EC2 impossible. To connect with redis installed on remote server we need to run `redis-server` with `--port` option specifying the port number, `--protected-mode` option set to `no` to allow connection from redis client `redis-cli` and `--daemonize` option set to yes to run redis in background so that it keeps on running until it is manually terminated. We can select any random available port to start redis server other than `6379` because as soon as redis is installed it runs locally with the localhost (`127.0.0.1`) IP and `6379` port.
+Redis is binded to localhost (`127.0.0.1`) IP and runs at port `6379` by default. This default configuration makes connecting to redis outside of EC2 impossible. 
+
+To connect with redis installed on remote server we need to run `redis-server` with:
+- `--port` option specifying the port number 
+- `--protected-mode` option set to `no` to allow connection from redis client (`redis-cli`)
+- `--daemonize` option set to `yes` to run redis in background. 
+
+We can select any random available port to start redis server other than `6379` because as soon as redis is installed it runs locally with the localhost (`127.0.0.1`) IP and `6379` port.
 
 We can connect to remote Redis server from local machine using redis-cli using the command below. If we want to enter into redis shell we can keep the `{command}` argument blank.
 
