@@ -157,9 +157,7 @@ Run `terraform apply` to apply the execution plan to your cloud infrastructure. 
 terraform apply
 ```      
 
-![image](https://user-images.githubusercontent.com/90673309/213504132-f8cf403e-6fd7-4844-9fe1-a54a97cbc185.png)
 
-![image](https://user-images.githubusercontent.com/90673309/213504440-4a14de31-0e74-4081-a08c-1fe6d96befba.png)
 
 ## Install Redis manually on EC2 instance via Ansible
 Ansible is a software tool that provides simple but powerful automation for cross-platform computer support.
@@ -179,7 +177,7 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
     - name: Set environment variable
       shell: HOST=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)
     - name: Download redis gpg key
-      shell: curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+      shell: curl -fsSL "https://packages.redis.io/gpg" | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
     - name: Add redis gpg key
       shell: echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
     - name: Update the apt sources
@@ -205,10 +203,10 @@ Here is the output after the successful execution of the `ansible-playbook` comm
 
 ## Connecting to remote Redis server from local machine
 
-Install redis-cli on local machine using the commands below.
+Install `redis-cli` on local machine using the commands below.
 
 ```console
-curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+curl -fsSL "https://packages.redis.io/gpg" | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
 
 echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
 
