@@ -109,11 +109,11 @@ resource "aws_security_group" "main" {
 
 
 resource "local_file" "inventory" {
-    depends_on=[aws_instance.MYSQL_TEST]
+    depends_on=[aws_instance.redis-deployment]
     filename = "/home/ubuntu/inventory.txt"
     content = <<EOF
 [all]
-ansible-target1 ansible_connection=ssh ansible_host=${aws_instance.MYSQL_TEST.public_ip} ansible_user=ubuntu
+ansible-target1 ansible_connection=ssh ansible_host=${aws_instance.redis-deployment.public_ip} ansible_user=ubuntu
                 EOF
 }
 
