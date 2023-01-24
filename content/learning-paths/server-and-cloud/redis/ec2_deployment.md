@@ -157,6 +157,7 @@ Run `terraform apply` to apply the execution plan to your cloud infrastructure. 
 terraform apply
 ```      
 
+![image](https://user-images.githubusercontent.com/90673309/214234252-5388e25d-5fae-4fa2-9106-ceba871a758d.png)
 
 
 ## Install Redis manually on EC2 instance via Ansible
@@ -200,6 +201,7 @@ ansible-playbook {your_yml_file} -i {your_inventory_file} --key-file {path_to_pr
 
 Here is the output after the successful execution of the `ansible-playbook` command.
 
+![image](https://user-images.githubusercontent.com/90673309/214234425-00660e00-5b03-4ab5-8962-63f4f2ada658.png)
 
 
 ## Connecting to remote Redis server from local machine
