@@ -233,4 +233,5 @@ We can connect to remote Redis server from local machine using redis-cli using t
 redis-cli -h {public_dns} -p {port} {command}
 ```
 
-![image](https://user-images.githubusercontent.com/90673309/213519785-eb5297d6-b207-45db-968a-54883d7031d1.png)
+![image](https://user-images.githubusercontent.com/90673309/214235167-f971cd1d-210c-4e5b-8da5-242594cd895c.png)
+
