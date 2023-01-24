@@ -110,6 +110,15 @@ resource "aws_security_group" "main" {
   }
 }
 
+resource "local_file" "inventory" {
+    depends_on=[aws_instance.redis-deployment]
+    filename = "/home/ubuntu/inventory.txt"
+    content = <<EOF
+[all]
+ansible-target1 ansible_connection=ssh ansible_host=${aws_instance.redis-deployment.public_ip} ansible_user=ubuntu
+                EOF
+}
+
 resource "aws_key_pair" "deployer" {
         key_name   = "aws_key"
         public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCUZXm6T6JTQBuxw7aFaH6gmxDnjSOnHbrI59nf+YCHPqIHMlGaxWw0/xlaJiJynjOt67Zjeu1wNPifh2tzdN3UUD7eUFSGcLQaCFBDorDzfZpz4wLDguRuOngnXw+2Z3Iihy2rCH+5CIP2nCBZ+LuZuZ0oUd9rbGy6pb2gLmF89GYzs2RGG+bFaRR/3n3zR5ehgCYzJjFGzI8HrvyBlFFDgLqvI2KwcHwU2iHjjhAt54XzJ1oqevRGBiET/8RVsLNu+6UCHW6HE9r+T5yQZH50nYkSl/QKlxBj0tGHXAahhOBpk0ukwUlfbGcK6SVXmqtZaOuMNlNvssbocdg1KwOH ubuntu@ip-172-31-XXXX-XXXX"
@@ -230,4 +239,4 @@ We can connect to remote Redis server from local machine using redis-cli using t
 redis-cli -h {public_dns} -p {port} {command}
 ```
 
-![image](https://user-images.githubusercontent.com/90673309/213519785-eb5297d6-b207-45db-968a-54883d7031d1.png)
+![image](https://user-images.githubusercontent.com/90673309/214235167-f971cd1d-210c-4e5b-8da5-242594cd895c.png)
