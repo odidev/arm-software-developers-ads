@@ -75,20 +75,6 @@ resource "aws_instance" "redis-deployment" {
   key_name= "aws_key"
   vpc_security_group_ids = [aws_security_group.main.id]
 
-  provisioner "remote-exec" {
-    inline = [
-      "sudo apt update",
-      "sudo apt install -y ca-certificates curl gnupg lsb-release",
-      "curl -fsSL 'https://download.docker.com/linux/ubuntu/gpg' | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg",
-      "echo 'deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable' | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null",
-      "sudo apt update",
-      "sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin",
-      "sudo systemctl start docker",
-      "sudo docker run --name redis-container -p 6000:6379 -d redis --protected-mode no",
-      "redis-cli -h ${self.public_dns} -p 6000 set name test",
-    ]
-  }
-
   connection {
     type        = "ssh"
     host        = self.public_ip
@@ -96,7 +82,6 @@ resource "aws_instance" "redis-deployment" {
     private_key = file("/home/ubuntu/aws/aws_key")
     timeout     = "4m"
   }
-
 }
 
 resource "aws_security_group" "main" {
@@ -122,10 +107,6 @@ resource "aws_security_group" "main" {
     to_port          = 0
     protocol         = "-1"
     cidr_blocks      = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "main"
   }
 }
 
@@ -169,9 +150,6 @@ Run `terraform apply` to apply the execution plan to your cloud infrastructure. 
 terraform apply
 ```      
 
-![image](https://user-images.githubusercontent.com/90673309/213504132-f8cf403e-6fd7-4844-9fe1-a54a97cbc185.png)
-
-![image](https://user-images.githubusercontent.com/90673309/213504440-4a14de31-0e74-4081-a08c-1fe6d96befba.png)
 
 ## Install Redis manually on EC2 instance via Ansible
 Ansible is a software tool that provides simple but powerful automation for cross-platform computer support.
@@ -182,8 +160,9 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
 ```console
 ---
 - hosts: all
-  remote_user: root
   become: true
+  become_user: root
+  remote_user: ubuntu
 
   tasks:
     - name: Update the Machine
@@ -191,9 +170,9 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
     - name: Install docker dependencies
       shell: apt install -y ca-certificates curl gnupg lsb-release
     - name: Download docker gpg key
-      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     - name: Add docker gpg key
-      shell: echo 'deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable' | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+      shell: echo 'deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable' | tee /etc/apt/sources.list.d/docker.list > /dev/null
     - name: Update the apt sources
       shell: apt update
     - name: Install docker
@@ -206,12 +185,13 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
     - name: Start redis container
       shell: docker run --name redis-container -p 6000:6379 -d redis --protected-mode no
     - name: Connect to redis server using redis client
-      shell: redis-cli -h ${HOST} -p 6000 set name test
+      shell: redis-cli -p 6000 set name test
+      become_user: ubuntu
 ```
 
 To run a Playbook, we need to use the `ansible-playbook` command.
 ```console
-ansible-playbook {your_yml_file} --key-file {path_to_private_key}
+ansible-playbook {your_yml_file} -i {your_inventory_file} --key-file {path_to_private_key}
 ```
 **NOTE:-** Replace `{your_yml_file}` and `{path_to_private_key}` with orignal values.
 
@@ -223,6 +203,31 @@ Here is the output after the successful execution of the `ansible-playbook` comm
 
 ## Connecting to remote Redis server from local machine
 
-We can connect to remote Redis server from local machine using redis-cli.
+Install `redis-cli` on local machine using the commands below.
+
+```console
+curl -fsSL "https://packages.redis.io/gpg" | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+
+sudo apt update
+
+sudo apt install -y redis-tools redis
+```
+
+Redis is binded to localhost (`127.0.0.1`) IP and runs at port `6379` by default. This default configuration makes connecting to redis outside of EC2 impossible. 
+
+To connect with redis installed on remote server we need to run `redis-server` with:
+- `--port` option specifying the port number 
+- `--protected-mode` option set to `no` to allow connection from redis client (`redis-cli`)
+- `--daemonize` option set to `yes` to run redis in background. 
+
+We can select any random available port to start redis server other than `6379` because as soon as redis is installed it runs locally with the localhost (`127.0.0.1`) IP and `6379` port.
+
+We can connect to remote Redis server from local machine using redis-cli using the command below. If we want to enter into redis shell we can keep the `{command}` argument blank.
+
+```console
+redis-cli -h {public_dns} -p {port} {command}
+```
 
 ![image](https://user-images.githubusercontent.com/90673309/213519785-eb5297d6-b207-45db-968a-54883d7031d1.png)
