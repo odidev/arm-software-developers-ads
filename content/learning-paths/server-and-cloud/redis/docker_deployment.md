@@ -180,9 +180,13 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
     - name: Install docker dependencies
       shell: apt install -y ca-certificates curl gnupg lsb-release
     - name: Create directory
-      shell: mkdir /etc/apt/keyrings
+      file:
+        path: /etc/apt/keyrings
+        state: directory
     - name: Download docker gpg key
       shell: curl -fsSL 'https://download.docker.com/linux/ubuntu/gpg' | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      args:
+        warn: false
     - name: Add docker gpg key
       shell: echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
     - name: Update the apt sources
@@ -206,11 +210,10 @@ ansible-playbook {your_yml_file} -i {your_inventory_file} --key-file {path_to_pr
 ```
 **NOTE:-** Replace `{your_yml_file}` and `{path_to_private_key}` with orignal values.
 
-
-
 Here is the output after the successful execution of the `ansible-playbook` command.
 
-![image](https://user-images.githubusercontent.com/90673309/214467310-d79837b6-f612-4dbd-9d60-d63334a9326f.png)
+![image](https://user-images.githubusercontent.com/90673309/214483652-979b4c13-fe9c-4797-b0c3-b1ec84cab84a.png)
+
 
 ## Connecting to remote Redis server from local machine
 
@@ -241,4 +244,4 @@ We can connect to remote Redis server from local machine using redis-cli using t
 redis-cli -h {public_dns} -p {port} {command}
 ```
 
-![image](https://user-images.githubusercontent.com/90673309/214235167-f971cd1d-210c-4e5b-8da5-242594cd895c.png)
+![image](https://user-images.githubusercontent.com/90673309/214484066-ae9f4dfe-9d61-4454-b054-a3abc51b327e.png)
