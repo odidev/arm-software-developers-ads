@@ -157,7 +157,7 @@ Run `terraform apply` to apply the execution plan to your cloud infrastructure. 
 terraform apply
 ```      
 
-![image](https://user-images.githubusercontent.com/90673309/214234252-5388e25d-5fae-4fa2-9106-ceba871a758d.png)
+![image](https://user-images.githubusercontent.com/90673309/214486086-58c6e479-7608-45ba-99df-2b1481ed38d6.png)
 
 
 ## Install Redis manually on EC2 instance via Ansible
