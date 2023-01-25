@@ -56,11 +56,10 @@ Output when a key pair is generated:
 **Note:** Use the public key aws_key.pub inside the Terraform file to provision/start the instance and private key aws_key to connect to the instance.
 
 
-## Install Redis manually on EC2 instance via Terraform
+## Deploy EC2 instance via Terraform
 
-After generating the public and private keys, we have to create an EC2 instance. Then we will push our public key to the **authorized_keys** folder in `~/.ssh`. We will also create a security group that opens inbound ports `22`(ssh) and `6000`(Redis). We will also install Redis on remote server using `remote-exec` provisioner. Below is a Terraform file called `main.tf` which will do this for us.
+After generating the public and private keys, we have to create an EC2 instance. Then we will push our public key to the **authorized_keys** folder in `~/.ssh`. We will also create a security group that opens inbound ports `22`(ssh), `6000` (Redis), `6002` (Redis) and `6004` (Redis). Below is a Terraform file called `main.tf` which will do this for us.
 
-    
 
 ```console
 provider "aws" {
@@ -68,23 +67,11 @@ provider "aws" {
   access_key  = "AXXXXXXXXXXXXXXXXXXX"
   secret_key   = "AAXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 }
-
 resource "aws_instance" "redis-deployment" {
   ami = "ami-0888c389af05d881a"
   instance_type = "t4g.small"
   key_name= "aws_key"
   vpc_security_group_ids = [aws_security_group.main.id]
-
-  provisioner "remote-exec" {
-    inline = [
-      "curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg",
-      "echo 'deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main' | sudo tee /etc/apt/sources.list.d/redis.list",
-      "sudo apt update",
-      "sudo apt install -y redis",
-      "redis-server --port 6000 --protected-mode no --daemonize yes",
-      "redis-cli --cluster create ${self.public_dns}:6000 ${self.public_dns}:6002 ${self.public_dns}:6004 --cluster-replicas 1",
-    ]
-  }
 
   connection {
     type        = "ssh"
@@ -93,7 +80,6 @@ resource "aws_instance" "redis-deployment" {
     private_key = file("/home/ubuntu/aws/aws_key")
     timeout     = "4m"
   }
-
 }
 
 resource "aws_security_group" "main" {
@@ -134,10 +120,15 @@ resource "aws_security_group" "main" {
     protocol         = "-1"
     cidr_blocks      = ["0.0.0.0/0"]
   }
+}
 
-  tags = {
-    Name = "main"
-  }
+resource "local_file" "inventory" {
+    depends_on=[aws_instance.redis-deployment]
+    filename = "/home/ubuntu/inventory.txt"
+    content = <<EOF
+[all]
+ansible-target1 ansible_connection=ssh ansible_host=${aws_instance.redis-deployment.public_ip} ansible_user=ubuntu
+                EOF
 }
 
 resource "aws_key_pair" "deployer" {
@@ -179,10 +170,7 @@ Run `terraform apply` to apply the execution plan to your cloud infrastructure. 
 ```console
 terraform apply
 ```      
-
-![image](https://user-images.githubusercontent.com/90673309/213504132-f8cf403e-6fd7-4844-9fe1-a54a97cbc185.png)
-
-![image](https://user-images.githubusercontent.com/90673309/213504440-4a14de31-0e74-4081-a08c-1fe6d96befba.png)
+![image](https://user-images.githubusercontent.com/90673309/214234252-5388e25d-5fae-4fa2-9106-ceba871a758d.png)
 
 ## Install Redis manually on EC2 instance via Ansible
 Ansible is a software tool that provides simple but powerful automation for cross-platform computer support.
@@ -229,6 +217,30 @@ Here is the output after the successful execution of the `ansible-playbook` comm
 
 ## Connecting to remote Redis server from local machine
 
-We can connect to remote Redis server from local machine using redis-cli.
+Install `redis-cli` on local machine using the commands below.
 
+```console
+curl -fsSL "https://packages.redis.io/gpg" | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+
+sudo apt update
+
+sudo apt install -y redis-tools redis
+```
+
+Redis is binded to localhost (`127.0.0.1`) IP and runs at port `6379` by default. This default configuration makes connecting to redis outside of EC2 impossible. 
+
+To connect with redis installed on remote server we need to run `redis-server` with:
+- `--port` option specifying the port number 
+- `--protected-mode` option set to `no` to allow connection from redis client (`redis-cli`)
+- `--daemonize` option set to `yes` to run redis in background. 
+
+We can select any random available port to start redis server other than `6379` because as soon as redis is installed it runs locally with the localhost (`127.0.0.1`) IP and `6379` port.
+
+We can connect to remote Redis server from local machine using redis-cli using the command below. If we want to enter into redis shell we can keep the `{command}` argument blank.
+
+```console
+redis-cli -h {public_dns} -p {port} {command}
+```
 
