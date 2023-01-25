@@ -159,6 +159,8 @@ Run `terraform apply` to apply the execution plan to your cloud infrastructure. 
 terraform apply
 ```      
 
+![image](https://user-images.githubusercontent.com/90673309/213456956-9e5e897a-1cf9-4609-8a56-a0af0f99b3a8.png)
+
 
 ## Install Redis manually on EC2 instance via Ansible
 Ansible is a software tool that provides simple but powerful automation for cross-platform computer support.
@@ -175,13 +177,15 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
 
   tasks:
     - name: Update the Machine
-      shell: apt update -y
+      shell: apt update
     - name: Install docker dependencies
       shell: apt install -y ca-certificates curl gnupg lsb-release
+    - name: Create directory
+      shell: mkdir /etc/apt/keyrings
     - name: Download docker gpg key
-      shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+      shell: curl -fsSL 'https://download.docker.com/linux/ubuntu/gpg' | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     - name: Add docker gpg key
-      shell: echo 'deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable' | tee /etc/apt/sources.list.d/docker.list > /dev/null
+      shell: echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu  $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
     - name: Update the apt sources
       shell: apt update
     - name: Install docker
@@ -194,8 +198,7 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
     - name: Start redis container
       shell: docker run --name redis-container -p 6000:6379 -d redis --protected-mode no
     - name: Connect to redis server using redis client
-      shell: redis-cli -p 6000 set name test
-      become_user: ubuntu
+      shell: docker exec -it redis-container redis-cli set name test
 ```
 
 To run a Playbook, we need to use the `ansible-playbook` command.
@@ -208,7 +211,7 @@ ansible-playbook {your_yml_file} -i {your_inventory_file} --key-file {path_to_pr
 
 Here is the output after the successful execution of the `ansible-playbook` command.
 
-
+![image](https://user-images.githubusercontent.com/90673309/214467310-d79837b6-f612-4dbd-9d60-d63334a9326f.png)
 
 ## Connecting to remote Redis server from local machine
 
