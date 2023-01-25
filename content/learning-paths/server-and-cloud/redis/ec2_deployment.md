@@ -178,6 +178,8 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
       shell: apt update -y
     - name: Download redis gpg key
       shell: curl -fsSL "https://packages.redis.io/gpg" | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+      args:
+        warn: false
     - name: Add redis gpg key
       shell: echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" |  tee /etc/apt/sources.list.d/redis.list
     - name: Update the apt sources
@@ -233,5 +235,5 @@ We can connect to remote Redis server from local machine using redis-cli using t
 redis-cli -h {public_dns} -p {port} {command}
 ```
 
-![image](https://user-images.githubusercontent.com/90673309/214235167-f971cd1d-210c-4e5b-8da5-242594cd895c.png)
+![image](https://user-images.githubusercontent.com/90673309/214484066-ae9f4dfe-9d61-4454-b054-a3abc51b327e.png)
 
