@@ -186,11 +186,11 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
 
   tasks:
     - name: Update the Machine
-      shell: apt update -y
-    - name: Set environment variable
-      shell: HOST=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)
+      shell: apt update
     - name: Download redis gpg key
       shell: curl -fsSL https://packages.redis.io/gpg | gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+      args:
+        warn: false
     - name: Add redis gpg key
       shell: echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
     - name: Update the apt sources
@@ -200,7 +200,9 @@ To run Ansible, we have to create a `.yml` file, which is also known as `Ansible
     - name: Start redis server
       shell: redis-server --port 6000 --protected-mode no --daemonize yes
     - name: Create redis cluster
-      shell: redis-cli --cluster create ${self.public_dns}:6000 ${self.public_dns}:6002 ${self.public_dns}:6004 --cluster-replicas 1
+      shell: redis-cli --cluster create $HOST:6000 $HOST:6002 $HOST:6004 --cluster-replicas 1
+      environment:
+        HOST=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)
 ```
 
 To run a Playbook, we need to use the `ansible-playbook` command.
